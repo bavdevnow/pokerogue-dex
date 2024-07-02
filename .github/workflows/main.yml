@@ -1,32 +1,37 @@
-name: CI
+name: Deploy SolidStart to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: install
-        run: npm i --legacy-peer-deps
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
 
-      - name: build
-        run: npm run build
-        env:
-          BASE_PATH: /pokerogue-dex/
+    - name: Install dependencies
+      run: npm install
 
-      - name: create .nojekyll
-        run: touch .output/public/.nojekyll
+    - name: Build SolidStart project
+      run: npm run build
 
-      - name: deploy pages
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
-        with:
-          branch: gh-pages
-          folder: .output/public
+    - name: Deploy to GitHub Pages
+      run: |
+        git config --global user.email "bavdevnow@gmail.com"
+        git config --global user.name "bavdevnow"
+        git remote set-url origin https://github.com/bavdevnow/pokerogue-dex.git
+        git fetch
+        git switch -C gh-pages
+        cp -r dist/* .
+        git add .
+        git commit -m "Deploy SolidStart app"
+        git push origin gh-pages --force
